@@ -9,7 +9,7 @@
 ## 快速开始
 1. 克隆仓库：
 
-   git clone <your-repo-url>
+   git clone https://github.com/Fang2077/GridWars-AI.git
    cd 兵棋Online_副本
 
 2. 建议使用虚拟环境：
