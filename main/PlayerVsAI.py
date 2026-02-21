@@ -129,7 +129,7 @@ def CreatSoldier(Player,pos,DiceCount):
 
     for TestPoint in PosNeighbors:
         # 合法条件：1. 不越界 2. 非障碍 
-        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.weith:  # 不越界
+        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.width:  # 不越界
             if maper.MapData[TestPoint[0]][TestPoint[1]]['pass'] == True:  # 非障碍
                     InRuleNeibors.append(TestPoint)
     for i in InRuleNeibors:
@@ -227,7 +227,7 @@ def CreatCamp(Player,pos,DiceCount):
     
     for TestPoint in PosNeighbors:
         # 合法条件：1. 不越界 2. 可通行
-        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.weith:  # 不越界
+        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.width:  # 不越界
             if maper.MapData[TestPoint[0]][TestPoint[1]]['pass'] == True:  # 可通行
                     InRuleNeibors.append(TestPoint)
     for i in InRuleNeibors:

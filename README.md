@@ -1,6 +1,11 @@
 # GridWars-AI
 
-这是一个基于 Python 的兵棋模拟项目（含 AI 对战与玩家对战模式），您可以使用该项目对AI的理解能力、决策能力等进行简易的测试
+这是一个基于 Python 的兵棋模拟项目（含 AI 对战与玩家对战模式），您可以使用该项目对AI的理解能力、决策能力等进行简易的测试,游戏规则相关内容详见'游戏规则描述.md'
+
+##演示链接
+
+bilibili : https://www.bilibili.com/video/BV15RZQBSE5r
+youtube : https://youtu.be/tmpkG2j-mUg?si=LE9GstJq0Bv5D0Qq
 
 ## 特性
 - AI vs AI、玩家 vs AI 等模式

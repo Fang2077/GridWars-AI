@@ -20,7 +20,7 @@ from AI_functions import create_bot
 # ===================== Pygame 渲染模块 =====================
 # 棋盘渲染配置
 GRID_SIZE = 60
-GRID_COUNT = 10
+GRID_COUNT = 6
 BOARD_OFFSET = (50, 50)
 SCREEN_WIDTH = BOARD_OFFSET[0] + GRID_SIZE * GRID_COUNT + 50
 SCREEN_HEIGHT = BOARD_OFFSET[1] + GRID_SIZE * GRID_COUNT + 50
@@ -85,16 +85,16 @@ def render_board(map_data):
     
     # 更新画面
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(5)
 
 # ===================== 逻辑模块 =====================
 #规定名称：营地：camp，战士：soldier，阵营：red\black
 
-#初始化地图（10*10）
+#初始化地图（6*6）
 maper = MapManager()
-maper.CreateMap(10,10)
+maper.CreateMap(6,6)
 maper.AddUnit(1,'camp',[0,0])
-maper.AddUnit(-1,'camp',[9,9])
+maper.AddUnit(-1,'camp',[5,5])
 
 #全局变量初始化
 DiceCount = 0
@@ -129,7 +129,7 @@ def CreatSoldier(Player,pos,DiceCount):
 
     for TestPoint in PosNeighbors:
         # 合法条件：1. 不越界 2. 非障碍 
-        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.weith:  # 不越界
+        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.width:  # 不越界
             if maper.MapData[TestPoint[0]][TestPoint[1]]['pass'] == True:  # 非障碍
                     InRuleNeibors.append(TestPoint)
     for i in InRuleNeibors:
@@ -227,7 +227,7 @@ def CreatCamp(Player,pos,DiceCount):
     
     for TestPoint in PosNeighbors:
         # 合法条件：1. 不越界 2. 可通行
-        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.weith:  # 不越界
+        if 0 <= TestPoint[0] < maper.length and 0 <= TestPoint[1] < maper.width:  # 不越界
             if maper.MapData[TestPoint[0]][TestPoint[1]]['pass'] == True:  # 可通行
                     InRuleNeibors.append(TestPoint)
     for i in InRuleNeibors:
@@ -376,7 +376,7 @@ print_map_simple(maper.MapData)
 render_board(maper.MapData)  # 新增：初始渲染棋盘
 
 
-while True:
+def main():
     print('=====red=====')
     DiceCount = dice()
     print(f'\nDiceCount = {DiceCount}')
@@ -397,12 +397,18 @@ while True:
     LoopLock = True
     while LoopLock:
         AIpromot = f'{promot}\n{str(maper.MapData)} '
-        command = bot1.ask_questions(f'你当前是红队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        try:
+            command = bot1.ask_questions(f'你当前是红队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        except Exception as e:
+            print(f"AI调用失败:{e}\n程序已经自动终止")
+            sys.exit()
         print(command)
         tokens = command.strip().split()
         try:
             RedTrun(tokens)
-        except:pass
+        except Exception as e:
+            print(f'执行失败:{e}')
+            pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
 
@@ -426,20 +432,30 @@ while True:
     LoopLock = True
     while LoopLock:
         AIpromot = f'{promot}\n{str(maper.MapData)} '
-        command = bot2.ask_questions(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        try:
+            command = bot2.ask_questions(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        except Exception as e:
+            print(f"AI调用失败:{e}\n程序已经自动终止")
+            sys.exit()
         print(command)
         tokens = command.strip().split()
         try:
             BlackTrun(tokens)
-        except:pass
+        except Exception as e:
+            print(f'执行失败:{e}')
+            pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
 
-    #胜负判断
-    CountCampSoldier()#各单位数量统计
-    if(RedCampNum == 0):
-        print('Black win')
-        break
-    elif(BlackCampNum == 0):
-        print('Red win')
-        break
+
+if __name__ == "__main__":
+    while True:
+        main()
+        #胜负判断
+        CountCampSoldier()#各单位数量统计
+        if(RedCampNum == 0):
+            print('Black win')
+            break
+        elif(BlackCampNum == 0):
+            print('Red win')
+            break
