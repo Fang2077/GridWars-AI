@@ -377,6 +377,7 @@ render_board(maper.MapData)  # 新增：初始渲染棋盘
 
 
 def main():
+    global LoopLock,ChooseList,DiceCount,RedCampNum,RedSoldierNum,BlackCampNum,BlackSoldierNum
     print('=====red=====')
     DiceCount = dice()
     print(f'\nDiceCount = {DiceCount}')
