@@ -107,6 +107,7 @@ BlackSoldierNum = 0 #黑战士数
 LoopLock = True
 MainLoopLock = True
 mistake_times = 0
+api_key = ''
 
 #骰子：生成随机数（1-6）
 def dice():
@@ -364,19 +365,10 @@ def BlackTrun(tokens):
             print_map_simple(maper.MapData)
             render_board(maper.MapData)  # 新增：执行指令后渲染
 
-
-'''bot1_base_url = input('bot1 base_url:')
-bot2_base_url = input('bot2 base_url:')
-bot1_api_key = input('bot1 api_key:')
-bot2_api_key = input('bot2 api_key:')
-bot1_model_name = input('bot1 model_name:')
-bot2_model_name = input('bot2 model_name:')'''
-
-bot1 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-2-0-pro-260215')
-bot2 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-1-6-lite-251015')
+bot1 = create_bot(api_key,'https://ark.cn-beijing.volces.com/api/v3','doubao-seed-2-0-pro-260215')
+bot2 = create_bot(api_key,'https://ark.cn-beijing.volces.com/api/v3','doubao-seed-2-0-pro-260215')
 print_map_simple(maper.MapData)
 render_board(maper.MapData)  # 新增：初始渲染棋盘
-
 
 def main():
     global LoopLock,MainLoopLock,ChooseList,DiceCount,RedCampNum,RedSoldierNum,BlackCampNum,BlackSoldierNum,mistake_times
@@ -402,7 +394,7 @@ def main():
     while LoopLock:
         AIpromot = f'{promot}\n{str(maper.MapData)} '
         try:
-            command = bot1.ask_questions(f'你当前是红队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+            command = bot1.get_response(f'你当前是红队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
         except Exception as e:
             print(f"AI调用失败:{e}\n程序已经自动终止")
             sys.exit()
@@ -424,9 +416,11 @@ def main():
     if(RedCampNum == 0):
         print('Black win')
         MainLoopLock = False
+        return
     elif(BlackCampNum == 0):
         print('Red win')
         MainLoopLock = False
+        return
 
     print('=====black=====')
     DiceCount = dice()
@@ -449,7 +443,7 @@ def main():
     while LoopLock:
         AIpromot = f'{promot}\n{str(maper.MapData)} '
         try:
-            command = bot2.ask_questions(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+            command = bot2.get_response(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
         except Exception as e:
             print(f"AI调用失败:{e}\n程序已经自动终止")
             sys.exit()
@@ -471,10 +465,11 @@ def main():
     if(RedCampNum == 0):
         print('Black win')
         MainLoopLock = False
+        return
     elif(BlackCampNum == 0):
         print('Red win')
         MainLoopLock = False
-
+        return
 
 if __name__ == "__main__":
     while MainLoopLock:

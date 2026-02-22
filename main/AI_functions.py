@@ -110,7 +110,7 @@ result = 战士点数 + 营地点数
 """
         return prompt
 
-    def ask_questions(self, user_input):
+    def get_response(self, user_input):
         """
         核心问答功能（移除记忆逻辑）
         :param user_input: 用户/游戏传入的输入（地图数据+骰子数+合法指令）
