@@ -14,7 +14,7 @@ if project_root not in sys.path:
 import random
 import ast
 import pygame
-from MapManager import MapManager
+from main.MapManager import MapManager
 
 # ===================== Pygame 渲染模块 =====================
 # 棋盘渲染配置

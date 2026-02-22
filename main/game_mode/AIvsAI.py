@@ -1,15 +1,15 @@
 import os
 import sys
 
-# 1. 获取当前文件的绝对路径
-current_file = os.path.abspath(__file__)  # ai_bot/ai_core.py 的绝对路径
-# 2. 获取当前文件的上级目录（ai_bot/）
+# 1. 获取当前脚本（AIvsAI.py）的绝对路径
+current_file = os.path.abspath(__file__)
+# 2. 获取当前脚本所在目录（game_mode）
 current_dir = os.path.dirname(current_file)
-# 3. 获取项目根目录（my_wargame/，即上级的上级）
-project_root = os.path.dirname(current_dir)
-# 4. 将项目根目录添加到 Python 的搜索路径
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# 3. 获取上级目录（main/）—— 往上退1级
+parent_dir = os.path.dirname(current_dir)
+# 4. 将上级目录加入sys.path（Python会在这里找模块）
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 import random
 import ast
@@ -105,6 +105,8 @@ BlackCampNum = 0  #黑营地数
 RedSoldierNum = 0   #红战士数
 BlackSoldierNum = 0 #黑战士数
 LoopLock = True
+MainLoopLock = True
+mistake_times = 0
 
 #骰子：生成随机数（1-6）
 def dice():
@@ -363,23 +365,24 @@ def BlackTrun(tokens):
             render_board(maper.MapData)  # 新增：执行指令后渲染
 
 
-bot1_base_url = input('bot1 base_url:')
+'''bot1_base_url = input('bot1 base_url:')
 bot2_base_url = input('bot2 base_url:')
 bot1_api_key = input('bot1 api_key:')
 bot2_api_key = input('bot2 api_key:')
 bot1_model_name = input('bot1 model_name:')
-bot2_model_name = input('bot2 model_name:')
+bot2_model_name = input('bot2 model_name:')'''
 
-bot1 = create_bot(bot1_api_key,bot1_base_url,bot1_model_name)
-bot2 = create_bot(bot2_api_key,bot2_base_url,bot2_model_name)
+bot1 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-2-0-pro-260215')
+bot2 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-1-6-lite-251015')
 print_map_simple(maper.MapData)
 render_board(maper.MapData)  # 新增：初始渲染棋盘
 
 
 def main():
-    global LoopLock,ChooseList,DiceCount,RedCampNum,RedSoldierNum,BlackCampNum,BlackSoldierNum
+    global LoopLock,MainLoopLock,ChooseList,DiceCount,RedCampNum,RedSoldierNum,BlackCampNum,BlackSoldierNum,mistake_times
     print('=====red=====')
     DiceCount = dice()
+    mistake_times = 0
     print(f'\nDiceCount = {DiceCount}')
     #1.dicecount = 0-5 and RedSoldierNum != 0:生成或移动战士棋
     #2.dicecount = 6 and RedSoldierNum != 0:生成或移动战士棋或生成营地
@@ -409,9 +412,21 @@ def main():
             RedTrun(tokens)
         except Exception as e:
             print(f'执行失败:{e}')
+            mistake_times = mistake_times+1
+            if mistake_times == 4:
+                LoopLock = False
+                RedCampNum = 0
             pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
+    #胜负判断
+    CountCampSoldier()#各单位数量统计
+    if(RedCampNum == 0):
+        print('Black win')
+        MainLoopLock = False
+    elif(BlackCampNum == 0):
+        print('Red win')
+        MainLoopLock = False
 
     print('=====black=====')
     DiceCount = dice()
@@ -444,19 +459,23 @@ def main():
             BlackTrun(tokens)
         except Exception as e:
             print(f'执行失败:{e}')
+            mistake_times = mistake_times+1
+            if mistake_times == 4:
+                LoopLock = False
+                BlackSoldierNum = 0
             pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
+    #胜负判断
+    CountCampSoldier()#各单位数量统计
+    if(RedCampNum == 0):
+        print('Black win')
+        MainLoopLock = False
+    elif(BlackCampNum == 0):
+        print('Red win')
+        MainLoopLock = False
 
 
 if __name__ == "__main__":
-    while True:
+    while MainLoopLock:
         main()
-        #胜负判断
-        CountCampSoldier()#各单位数量统计
-        if(RedCampNum == 0):
-            print('Black win')
-            break
-        elif(BlackCampNum == 0):
-            print('Red win')
-            break

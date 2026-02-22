@@ -119,7 +119,7 @@ result = 战士点数 + 营地点数
         # 初始化OpenAI客户端
         client = OpenAI(
             api_key=self.api_key,
-            base_url=self.base_url
+            base_url=self.base_url#https://ark.cn-beijing.volces.com/api/v3
         )
 
         # 构造对话消息（无历史记忆，仅当前输入+系统提示）
@@ -129,13 +129,10 @@ result = 战士点数 + 营地点数
         ]
 
         # 调用API获取回复
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=self.model_name,  # 使用配置中的模型名，更灵活
-            messages=messages,
-            temperature=0.7,  # 适度随机性，符合策略游戏需求
-            max_tokens=100  # 限制输出长度，避免冗余
+            input=messages,
+            temperature=0,#topP和temperture都为0，最大程度提高准确性
+            top_p=0  
         )
-
-        # 提取纯回复内容（无任何额外处理）
-        answer = response.choices[0].message.content.strip()
-        return answer
+        return response.output[1].content[0].text

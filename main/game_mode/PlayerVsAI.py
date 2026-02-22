@@ -1,15 +1,15 @@
 import os
 import sys
 
-# 1. 获取当前文件的绝对路径
-current_file = os.path.abspath(__file__)  # ai_bot/ai_core.py 的绝对路径
-# 2. 获取当前文件的上级目录（ai_bot/）
+# 1. 获取当前脚本（AIvsAI.py）的绝对路径
+current_file = os.path.abspath(__file__)
+# 2. 获取当前脚本所在目录（game_mode）
 current_dir = os.path.dirname(current_file)
-# 3. 获取项目根目录（my_wargame/，即上级的上级）
-project_root = os.path.dirname(current_dir)
-# 4. 将项目根目录添加到 Python 的搜索路径
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# 3. 获取上级目录（main/）—— 往上退1级
+parent_dir = os.path.dirname(current_dir)
+# 4. 将上级目录加入sys.path（Python会在这里找模块）
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 import random
 import ast
@@ -20,7 +20,7 @@ from AI_functions import create_bot
 # ===================== Pygame 渲染模块 =====================
 # 棋盘渲染配置
 GRID_SIZE = 60
-GRID_COUNT = 10
+GRID_COUNT = 6
 BOARD_OFFSET = (50, 50)
 SCREEN_WIDTH = BOARD_OFFSET[0] + GRID_SIZE * GRID_COUNT + 50
 SCREEN_HEIGHT = BOARD_OFFSET[1] + GRID_SIZE * GRID_COUNT + 50
@@ -85,16 +85,16 @@ def render_board(map_data):
     
     # 更新画面
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(5)
 
 # ===================== 逻辑模块 =====================
 #规定名称：营地：camp，战士：soldier，阵营：red\black
 
-#初始化地图（10*10）
+#初始化地图（6*6）
 maper = MapManager()
-maper.CreateMap(10,10)
+maper.CreateMap(6,6)
 maper.AddUnit(1,'camp',[0,0])
-maper.AddUnit(-1,'camp',[9,9])
+maper.AddUnit(-1,'camp',[5,5])
 
 #全局变量初始化
 DiceCount = 0
@@ -105,6 +105,8 @@ BlackCampNum = 0  #黑营地数
 RedSoldierNum = 0   #红战士数
 BlackSoldierNum = 0 #黑战士数
 LoopLock = True
+MainLoopLock = True
+mistake_times = 0
 
 #骰子：生成随机数（1-6）
 def dice():
@@ -363,18 +365,24 @@ def BlackTrun(tokens):
             render_board(maper.MapData)  # 新增：执行指令后渲染
 
 
-bot2_base_url = input('bot base_url:')
-bot2_api_key = input('bot api_key:')
-bot2_model_name = input('bot model_name:')
+'''bot1_base_url = input('bot1 base_url:')
+bot2_base_url = input('bot2 base_url:')
+bot1_api_key = input('bot1 api_key:')
+bot2_api_key = input('bot2 api_key:')
+bot1_model_name = input('bot1 model_name:')
+bot2_model_name = input('bot2 model_name:')'''
 
-bot2 = create_bot(bot2_api_key,bot2_base_url,bot2_model_name)
+bot1 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-2-0-pro-260215')
+bot2 = create_bot('6c6ca4d4-7909-44a2-a944-02607f1e1563','https://ark.cn-beijing.volces.com/api/v3','doubao-seed-1-6-lite-251015')
 print_map_simple(maper.MapData)
 render_board(maper.MapData)  # 新增：初始渲染棋盘
 
 
-while True:
+def main():
+    global LoopLock,MainLoopLock,ChooseList,DiceCount,RedCampNum,RedSoldierNum,BlackCampNum,BlackSoldierNum,mistake_times
     print('=====red=====')
     DiceCount = dice()
+    mistake_times = 0
     print(f'\nDiceCount = {DiceCount}')
     #1.dicecount = 0-5 and RedSoldierNum != 0:生成或移动战士棋
     #2.dicecount = 6 and RedSoldierNum != 0:生成或移动战士棋或生成营地
@@ -392,13 +400,33 @@ while True:
     print(promot)
     LoopLock = True
     while LoopLock:
-        command = input(':')
+        AIpromot = f'{promot}\n{str(maper.MapData)} '
+        try:
+            command = input('command:')
+        except Exception as e:
+            print("非法指令")
+            pass
+        print(command)
         tokens = command.strip().split()
         try:
             RedTrun(tokens)
-        except:pass
+        except Exception as e:
+            print(f'执行失败:{e}')
+            mistake_times = mistake_times+1
+            if mistake_times == 4:
+                LoopLock = False
+                RedCampNum = 0
+            pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
+    #胜负判断
+    CountCampSoldier()#各单位数量统计
+    if(RedCampNum == 0):
+        print('Black win')
+        MainLoopLock = False
+    elif(BlackCampNum == 0):
+        print('Red win')
+        MainLoopLock = False
 
     print('=====black=====')
     DiceCount = dice()
@@ -420,20 +448,34 @@ while True:
     LoopLock = True
     while LoopLock:
         AIpromot = f'{promot}\n{str(maper.MapData)} '
-        command = bot2.ask_questions(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        try:
+            command = bot2.ask_questions(f'你当前是黑队，你这一轮摇到的点数是{DiceCount}\n{AIpromot}')
+        except Exception as e:
+            print(f"AI调用失败:{e}\n程序已经自动终止")
+            sys.exit()
         print(command)
         tokens = command.strip().split()
         try:
             BlackTrun(tokens)
-        except:pass
+        except Exception as e:
+            print(f'执行失败:{e}')
+            mistake_times = mistake_times+1
+            if mistake_times == 4:
+                LoopLock = False
+                BlackSoldierNum = 0
+            pass
     print_map_simple(maper.MapData)
     render_board(maper.MapData)
-
     #胜负判断
     CountCampSoldier()#各单位数量统计
     if(RedCampNum == 0):
         print('Black win')
-        break
+        MainLoopLock = False
     elif(BlackCampNum == 0):
         print('Red win')
-        break
+        MainLoopLock = False
+
+
+if __name__ == "__main__":
+    while MainLoopLock:
+        main()
